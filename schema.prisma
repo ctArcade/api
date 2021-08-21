@@ -1,0 +1,61 @@
+datasource db {
+   provider = "postgresql"
+   url      = env("DATABASE_URL")
+}
+
+generator db {
+   provider = "go run github.com/prisma/prisma-client-go"
+}
+
+model User {
+   id        String    @id @default(cuid())
+   username  String    @unique
+   password  Bytes     @unique
+   email     String    @unique
+   bio       String
+   role      Role      @default(USER)
+   games     Game[]
+   comments  Comment[]
+   scores    Score[]
+   createdAt DateTime  @default(now())
+   updatedAt DateTime  @updatedAt
+}
+
+model Game {
+   id          String    @id @default(cuid())
+   title       String
+   description String
+   author      User      @relation(fields: [authorName], references: [username])
+   authorName  String
+   comments    Comment[]
+   scores      Score[]
+   createdAt   DateTime  @default(now())
+   updatedAt   DateTime  @updatedAt
+}
+
+model Comment {
+   id         String   @id @default(cuid())
+   content    String
+   author     User     @relation(fields: [authorName], references: [username])
+   authorName String
+   game       Game     @relation(fields: [gameId], references: [id])
+   gameId     String
+   createdAt  DateTime @default(now())
+   updatedAt  DateTime @updatedAt
+}
+
+model Score {
+   id         String   @id @default(cuid())
+   value      Int
+   game       Game     @relation(fields: [gameId], references: [id])
+   gameId     String
+   player     User     @relation(fields: [playerName], references: [username])
+   playerName String
+   createdAt  DateTime @default(now())
+   updatedAt  DateTime @updatedAt
+}
+
+enum Role {
+   USER
+   ADMIN
+}
